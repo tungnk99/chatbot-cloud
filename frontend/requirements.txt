@@ -1,0 +1,8 @@
+# Frontend Streamlit
+streamlit==1.40.2
+
+# HTTP client
+httpx==0.28.1
+
+# Utils
+python-dotenv==1.0.1

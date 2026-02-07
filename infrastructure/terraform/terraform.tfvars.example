@@ -1,0 +1,27 @@
+# Copy thành terraform.tfvars và điền giá trị (không commit terraform.tfvars)
+
+project_id = "your-gcp-project-id"
+region     = "asia-southeast1"
+
+# Bỏ trống nếu muốn thêm OPENAI_API_KEY vào Secret Manager thủ công sau (gcloud secrets versions add ...)
+# openai_api_key_secret = "sk-..."
+
+# Tùy chọn: URI image nếu build sẵn (mặc định dùng :latest từ Artifact Registry)
+# image_tools   = "asia-southeast1-docker.pkg.dev/your-project/chatbot-cloud/tools:latest"
+# image_chatbot = "asia-southeast1-docker.pkg.dev/your-project/chatbot-cloud/chatbot:latest"
+# image_frontend = "asia-southeast1-docker.pkg.dev/your-project/chatbot-cloud/frontend:latest"
+
+# Cloud Run scaling (theo AGENT.md: min 0, max 10)
+# chatbot_min_instances = 0
+# chatbot_max_instances = 10
+# tools_min_instances   = 0
+# tools_max_instances   = 10
+# frontend_min_instances = 0
+# frontend_max_instances = 5
+
+# Demo: cho phép gọi không cần auth
+# allow_unauthenticated = true
+
+# Pub/Sub: bật hàng đợi chat bất đồng bộ (tránh treo khi LLM nặng). Mặc định true.
+# enable_pubsub_async = true
+# api_prefix = "/api"

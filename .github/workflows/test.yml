@@ -1,0 +1,55 @@
+# CI: test + lint (AGENT: chạy test trước khi commit, tích hợp CI/CD)
+name: Test and Lint
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps (Tools)
+        run: |
+          cd backend/tools && pip install -r requirements.txt
+          pip install pytest httpx
+      - name: Run tests (Tools)
+        run: cd backend/tools && python -m pytest tests/ -v
+
+  test-chatbot:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ""
+      TOOLS_BASE_URL: http://localhost:8081
+      RATE_LIMIT_PER_MINUTE: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps (Chatbot)
+        run: |
+          cd backend/chatbot && pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+      - name: Run tests (Chatbot)
+        run: cd backend/chatbot && python -m pytest tests/ -v
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Black and isort
+        run: pip install black==24.10.0 isort==5.13.2
+      - name: Check format (Black)
+        run: black --check backend/ frontend/
+      - name: Check import sort (isort)
+        run: isort --check-only backend/ frontend/

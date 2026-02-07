@@ -1,0 +1,52 @@
+# Cloud Build: build và push 3 images (Tools, Chatbot, Frontend) lên Artifact Registry
+# Chạy: gcloud builds submit --config=cloudbuild.yaml .
+# Cần: PROJECT_ID (mặc định từ gcloud config), _REGION (mặc định asia-southeast1), _REPO (mặc định chatbot-cloud)
+
+substitutions:
+  _REGION: asia-southeast1
+  _REPO: chatbot-cloud
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # Build Tools
+  - name: gcr.io/cloud-builders/docker
+    id: build-tools
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/tools:latest
+      - -f
+      - backend/tools/Dockerfile
+      - backend/tools
+    dir: .
+
+  # Build Chatbot
+  - name: gcr.io/cloud-builders/docker
+    id: build-chatbot
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/chatbot:latest
+      - -f
+      - backend/chatbot/Dockerfile
+      - backend/chatbot
+    dir: .
+
+  # Build Frontend
+  - name: gcr.io/cloud-builders/docker
+    id: build-frontend
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/frontend:latest
+      - -f
+      - frontend/Dockerfile
+      - frontend
+    dir: .
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/tools:latest
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/chatbot:latest
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/frontend:latest

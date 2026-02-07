@@ -1,0 +1,21 @@
+# Cấu hình chung: pytest, Black, isort (AGENT.md)
+[tool.pytest.ini_options]
+testpaths = ["backend/tools/tests", "backend/chatbot/tests", "tests/load"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-v --tb=short"
+filterwarnings = ["ignore::DeprecationWarning"]
+# Load test: bỏ qua nếu SKIP_LOAD_TEST=1 (CI không cần service chạy)
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+include = '\.pyi?$'
+exclude = '''
+/(\.git|\.terraform|__pycache__|\.venv|venv)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip = [".terraform", ".venv", "venv"]
