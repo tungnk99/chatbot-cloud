@@ -97,6 +97,8 @@ Chi tiết: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 6. Nếu Cloud Run chưa có image: chạy lại `terraform apply` hoặc redeploy từ Console.
 7. Lấy URL: `terraform output cloud_run_frontend_url` → mở trình duyệt.
 
+**Triển khai tự động:** Push code lên nhánh `main` → GitHub Actions build và deploy lên Cloud Run. Cấu hình secrets `GCP_PROJECT_ID`, `GCP_SA_KEY` theo [.github/workflows/README.md](.github/workflows/README.md).
+
 **Hướng dẫn đầy đủ (cho người triển khai / khách hàng):** [docs/DEPLOY_GUIDELINE.md](docs/DEPLOY_GUIDELINE.md).  
 **Terraform chi tiết:** [infrastructure/terraform/README.md](infrastructure/terraform/README.md).
 
