@@ -26,6 +26,13 @@ class SessionData(BaseModel):
     messages: list[MessageRecord] = Field(default_factory=list)
 
 
+class SessionListItem(BaseModel):
+    """Một dòng trong danh sách session (lịch sử phiên)."""
+
+    session_id: str
+    updated_at: str  # ISO 8601
+
+
 class Storage(ABC):
     """Abstract storage cho session."""
 
@@ -43,3 +50,7 @@ class Storage(ABC):
     def append_message(self, session_id: str, message: MessageRecord) -> None:
         """Thêm một message vào session (tạo session nếu chưa có)."""
         ...
+
+    def list_sessions(self, limit: int = 50) -> list["SessionListItem"]:
+        """Liệt kê session, mới nhất trước. Mặc định trả về [] nếu backend không hỗ trợ."""
+        return []

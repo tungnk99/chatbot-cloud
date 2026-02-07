@@ -4,7 +4,7 @@ Giao diện chat, gọi Backend Chatbot API.
 
 ## Chạy local
 
-1. Chạy **Chatbot** (Backend/chatbot) trước, ví dụ port 8080.
+1. Chạy **Chatbot** (Backend/chatbot) trước, ví dụ port 8080. Hoặc đặt `MOCK_API=true` để test giao diện không cần backend.
 2. Đặt biến môi trường `CHATBOT_API_URL=http://localhost:8080` (hoặc tạo `.env`).
 3. Chạy:
 
@@ -21,6 +21,7 @@ Mở http://localhost:8501 (hoặc port Streamlit báo).
 | Biến | Mô tả |
 |------|--------|
 | `CHATBOT_API_URL` | URL Chatbot API (mặc định http://localhost:8080) |
+| `MOCK_API` | `true` hoặc `1`: test giao diện không cần backend (trả về dữ liệu giả) |
 
 ## Docker
 

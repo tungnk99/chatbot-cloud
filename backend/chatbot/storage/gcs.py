@@ -4,7 +4,7 @@ import json
 from datetime import timezone
 from datetime import datetime
 
-from .base import MessageRecord, SessionData, Storage
+from .base import MessageRecord, SessionData, SessionListItem, Storage
 
 try:
     from google.cloud import storage
@@ -55,3 +55,23 @@ class GCSStorage(Storage):
         session.messages.append(message)
         session.updated_at = message.created_at
         self.save_session(session)
+
+    def list_sessions(self, limit: int = 50) -> list[SessionListItem]:
+        """Liệt kê session theo thời gian cập nhật object GCS mới nhất trước."""
+        prefix = f"{self.prefix}/"
+        blobs = list(self.bucket.list_blobs(prefix=prefix, max_results=limit * 2))
+        items: list[SessionListItem] = []
+        for b in sorted(blobs, key=lambda x: x.updated or x.time_created, reverse=True):
+            if len(items) >= limit:
+                break
+            if not b.name.endswith(".json") or b.name == prefix:
+                continue
+            name = b.name
+            if name.startswith(prefix):
+                name = name[len(prefix) :]
+            session_id = name.removesuffix(".json")
+            updated = b.updated or b.time_created
+            updated_at = updated.strftime("%Y-%m-%dT%H:%M:%SZ") if updated else ""
+            if session_id:
+                items.append(SessionListItem(session_id=session_id, updated_at=updated_at))
+        return items[:limit]

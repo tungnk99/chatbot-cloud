@@ -3,7 +3,7 @@
 from .base import MessageRecord, SessionData, Storage
 from .local import LocalStorage
 
-__all__ = ["Storage", "SessionData", "MessageRecord", "LocalStorage"]
+__all__ = ["Storage", "SessionData", "SessionListItem", "MessageRecord", "LocalStorage"]
 
 try:
     from .gcs import GCSStorage

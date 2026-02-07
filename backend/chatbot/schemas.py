@@ -53,3 +53,16 @@ class CreateSessionResponse(BaseModel):
 
     session_id: str
     created_at: str
+
+
+class SessionListItem(BaseModel):
+    """Một phiên trong danh sách GET /api/sessions."""
+
+    session_id: str
+    updated_at: str
+
+
+class ListSessionsResponse(BaseModel):
+    """GET /api/sessions."""
+
+    sessions: list[SessionListItem]

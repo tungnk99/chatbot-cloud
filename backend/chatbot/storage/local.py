@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path
 
-from .base import MessageRecord, SessionData, Storage
+from .base import MessageRecord, SessionData, SessionListItem, Storage
 
 
 class LocalStorage(Storage):
@@ -48,3 +48,14 @@ class LocalStorage(Storage):
         session.messages.append(message)
         session.updated_at = message.created_at
         self.save_session(session)
+
+    def list_sessions(self, limit: int = 50) -> list[SessionListItem]:
+        """Liệt kê session theo updated_at mới nhất trước."""
+        items: list[SessionListItem] = []
+        for p in sorted(self.base_path.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True):
+            if len(items) >= limit:
+                break
+            session = self.get_session(p.stem)
+            if session:
+                items.append(SessionListItem(session_id=session.session_id, updated_at=session.updated_at))
+        return items

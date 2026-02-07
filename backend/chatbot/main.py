@@ -24,7 +24,9 @@ from schemas import (
     ChatResponse,
     CreateSessionResponse,
     GetMessagesResponse,
+    ListSessionsResponse,
     MessageItem,
+    SessionListItem,
     ToolCallItem,
 )
 from services.llm_client import LLMClient
@@ -235,6 +237,15 @@ async def pubsub_chat_handler(request: Request) -> dict[str, str]:
         logger.exception("Pub/Sub chat handler error: %s", e)
         raise HTTPException(status_code=500, detail="Handler failed")
     return {"status": "ok"}
+
+
+@app.get(f"{settings.api_prefix}/sessions", response_model=ListSessionsResponse)
+async def list_sessions(limit: int = 50) -> ListSessionsResponse:
+    """Lấy danh sách phiên chat (lịch sử), mới nhất trước."""
+    items = storage.list_sessions(limit=min(limit, 100))
+    return ListSessionsResponse(
+        sessions=[SessionListItem(session_id=s.session_id, updated_at=s.updated_at) for s in items]
+    )
 
 
 @app.get(
