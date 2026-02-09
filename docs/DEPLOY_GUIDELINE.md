@@ -216,8 +216,21 @@ Chi tiết từng lệnh nằm trong **README.md** tại thư mục gốc repo.
 
 ## 7. Xử lý sự cố
 
+### 7.1 Lỗi 403 Permission denied khi `terraform apply`
+
+Nếu gặp **Permission denied to list services** (serviceusage) hoặc **Permission 'iam.serviceAccounts.create' denied**:
+
+- **Nguyên nhân**: Tài khoản dùng cho Terraform (Application Default Credentials) không đủ quyền trên project.
+- **Cách xử lý**:
+  1. Dùng tài khoản có quyền **Owner** hoặc **Editor** trên project, chạy:  
+     `gcloud auth application-default login`  
+     Đăng nhập bằng tài khoản đó rồi chạy lại `terraform apply`.
+  2. Hoặc nhờ **Owner** của project cấp cho tài khoản của bạn ít nhất: **Service Usage Admin** (bật API), **Service Account Admin** (tạo SA), và quyền tạo Cloud Run, Storage, Secret Manager, Pub/Sub, Artifact Registry (hoặc gán role **Editor**).
+  3. Nếu project do trường/tổ chức quản lý: liên hệ admin project để họ chạy Terraform hoặc cấp quyền đủ cho tài khoản của bạn.
+
 | Triệu chứng | Gợi ý xử lý |
 |-------------|--------------|
+| **403 Permission denied** (list services / create service account) | Xem [§7.1](#71-lỗi-403-permission-denied-khi-terraform-apply): dùng tài khoản Owner/Editor hoặc được cấp đủ quyền. |
 | `terraform apply` báo lỗi API chưa bật | Bật thủ công: `gcloud services enable run.googleapis.com storage.googleapis.com secretmanager.googleapis.com cloudbuild.googleapis.com` rồi `terraform apply` lại. |
 | Cloud Run báo "Image not found" | Chạy `gcloud builds submit --config=cloudbuild.yaml .` từ root repo; sau đó `terraform apply` lại hoặc redeploy revision trên Console. |
 | Chatbot trả lời lỗi hoặc không gọi được LLM | Kiểm tra Secret Manager: secret `openai-api-key` đã có version và đúng key; Service Account Cloud Run Chatbot có quyền `secretmanager.secretAccessor`. |

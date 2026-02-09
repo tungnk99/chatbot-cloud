@@ -76,31 +76,44 @@ Chi tiết: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Bắt đầu nhanh
 
+### 📚 Hướng dẫn triển khai
+
+**➡️ [HUONG_DAN_TRIEN_KHAI.md](HUONG_DAN_TRIEN_KHAI.md) – Hướng dẫn triển khai từ đầu đến cuối (~10-15 phút)**
+
+Tài liệu bao gồm:
+- Quick Start (6 lệnh)
+- Hướng dẫn chi tiết từng bước
+- Xử lý 6 lỗi thường gặp
+- Checklist, lệnh hữu ích, tips bảo mật/chi phí
+
 ### Yêu cầu
 
-- GCP project (billing bật), [gcloud](https://cloud.google.com/sdk) và [Terraform](https://www.terraform.io/downloads) ≥ 1.0.
-- OpenAI API key (dạng `sk-...`).
+- GCP project (billing bật), [gcloud](https://cloud.google.com/sdk) và [Terraform](https://www.terraform.io/downloads) ≥ 1.0
+- OpenAI API key (dạng `sk-...`)
 
-### Triển khai lên GCP (khuyến nghị)
+### Triển khai nhanh (6 lệnh)
 
-1. Clone repo và vào thư mục Terraform:
-   ```bash
-   git clone <URL_REPO> && cd chatbot-cloud
-   cd infrastructure/terraform
-   ```
-2. Cấu hình: `cp terraform.tfvars.example terraform.tfvars`, sửa `project_id` (và tùy chọn `openai_api_key_secret`).
-3. Tạo hạ tầng: `terraform init && terraform apply`.
-4. (Nếu chưa dùng tfvars) Thêm OpenAI key vào Secret Manager:  
-   `echo -n "sk-..." | gcloud secrets versions add openai-api-key --data-file=-`
-5. Từ **root repo**: build và push image:  
-   `gcloud builds submit --config=cloudbuild.yaml .`
-6. Nếu Cloud Run chưa có image: chạy lại `terraform apply` hoặc redeploy từ Console.
-7. Lấy URL: `terraform output cloud_run_frontend_url` → mở trình duyệt.
+```bash
+# 1-2. Clone và đăng nhập
+git clone <URL_REPO> && cd chatbot-cloud
+gcloud auth login && gcloud config set project YOUR_PROJECT_ID
+gcloud auth application-default login  # ⚠️ QUAN TRỌNG
 
-**Triển khai tự động:** Push code lên nhánh `main` → GitHub Actions build và deploy lên Cloud Run. Cấu hình secrets `GCP_PROJECT_ID`, `GCP_SA_KEY` theo [.github/workflows/README.md](.github/workflows/README.md).
+# 3. Cấu hình Terraform
+cd infrastructure/terraform && cp terraform.tfvars.example terraform.tfvars
+# Sửa: project_id và openai_api_key_secret
 
-**Hướng dẫn đầy đủ (cho người triển khai / khách hàng):** [docs/DEPLOY_GUIDELINE.md](docs/DEPLOY_GUIDELINE.md).  
-**Terraform chi tiết:** [infrastructure/terraform/README.md](infrastructure/terraform/README.md).
+# 4-6. Triển khai
+terraform init && terraform apply
+cd ../../ && gcloud builds submit --config=cloudbuild.yaml .
+cd infrastructure/terraform && terraform apply
+```
+
+Lấy URL: `terraform output cloud_run_frontend_url` → mở trình duyệt.
+
+**Chi tiết đầy đủ**: Xem [HUONG_DAN_TRIEN_KHAI.md](HUONG_DAN_TRIEN_KHAI.md)  
+**Triển khai tự động**: [.github/workflows/README.md](.github/workflows/README.md)  
+**Terraform**: [infrastructure/terraform/README.md](infrastructure/terraform/README.md)
 
 ### Chạy local & test
 
@@ -132,17 +145,27 @@ chatbot-cloud/
 
 ## Tài liệu
 
+### 🚀 Triển khai
+
 | Tài liệu | Nội dung |
 |----------|----------|
+| **[HUONG_DAN_TRIEN_KHAI.md](HUONG_DAN_TRIEN_KHAI.md)** | **Hướng dẫn triển khai từ đầu đến cuối (Quick Start + Chi tiết + Xử lý lỗi)** |
+| [docs/DEPLOY_GUIDELINE.md](docs/DEPLOY_GUIDELINE.md) | Hướng dẫn triển khai đầy đủ (cho khách hàng) |
+| [infrastructure/terraform/README.md](infrastructure/terraform/README.md) | Terraform: biến, thứ tự deploy, backend state |
+
+### 📖 Kiến trúc & Vận hành
+
+| Tài liệu | Nội dung |
+|----------|----------|
+| [docs/REPORT.md](docs/REPORT.md) | **Báo cáo dự án tổng hợp** |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Kiến trúc hệ thống chi tiết |
-| [docs/DEPLOY_GUIDELINE.md](docs/DEPLOY_GUIDELINE.md) | Hướng dẫn triển khai (cho người mới / khách hàng) |
 | [docs/CONFIG.md](docs/CONFIG.md) | Biến môi trường, cấu hình Cloud Run (Terraform) |
 | [docs/OPERATIONS.md](docs/OPERATIONS.md) | Scaling, giám sát, logging, bảo mật |
 | [docs/API.md](docs/API.md) | Thiết kế API |
 | [docs/DATABASE.md](docs/DATABASE.md) | Schema, thiết kế dữ liệu |
 | [docs/PRD.md](docs/PRD.md) | Product Requirements Document |
 | [docs/PROJECT_CHECKLIST.md](docs/PROJECT_CHECKLIST.md) | Checklist phát triển & CI |
-| [infrastructure/terraform/README.md](infrastructure/terraform/README.md) | Terraform: biến, thứ tự deploy, backend state |
+| [docs/LOAD_TEST_GUIDE.md](docs/LOAD_TEST_GUIDE.md) | Hướng dẫn chạy load test và thu thập số liệu |
 
 ---
 

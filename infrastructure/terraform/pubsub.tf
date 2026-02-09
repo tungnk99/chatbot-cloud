@@ -1,9 +1,6 @@
 # Google Pub/Sub: Hàng đợi xử lý tin nhắn chat bất đồng bộ
 # Tin nhắn được đẩy vào topic, subscription push tới Chatbot để gọi LLM, tránh treo kết nối người dùng.
-
-data "google_project" "project" {
-  project_id = var.project_id
-}
+# (Không dùng data.google_project để tránh lỗi permission khi tài khoản chưa có resourcemanager.projects.get)
 
 resource "google_pubsub_topic" "chat_requests" {
   count = var.enable_pubsub_async ? 1 : 0
