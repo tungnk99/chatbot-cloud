@@ -297,18 +297,24 @@ def render_header() -> None:
         """
         <div class="app-header">
             <p class="logo">◇ Chatbot Tài Chính</p>
-            <p class="subtitle">Hỏi đáp tài chính · Lãi suất · Tiết kiệm · Powered by AI</p>
+            <p class="subtitle">Tư vấn tài chính · Lãi suất · Tiết kiệm · Vay vốn · Đầu tư · Ngân sách · Powered by AI</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
 
-# Gợi ý câu hỏi khi chưa có tin nhắn
+# Gợi ý câu hỏi khi chưa có tin nhắn - Bao gồm cả 7 tools
 SUGGESTIONS = [
+    # Tools cũ
     "Tính lãi 100 triệu gửi 12 tháng, lãi suất 6%/năm?",
     "Tỷ lệ tiết kiệm nếu thu nhập 20 triệu, tiết kiệm 5 triệu?",
-    "Nên dùng lãi đơn hay lãi kép khi gửi tiết kiệm?",
+    # Tools mới
+    "Vay 500 triệu lãi 8%/năm trả góp 10 năm, mỗi tháng trả bao nhiêu?",
+    "Đầu tư 10tr ban đầu + 2tr/tháng, lợi nhuận 8%/năm trong 10 năm được bao nhiêu?",
+    "Thu nhập 20 triệu/tháng nên phân bổ ngân sách thế nào?",
+    "1000 USD bằng bao nhiêu tiền Việt?",
+    "Chi tiêu 15 triệu/tháng cần bao nhiêu tiền dự phòng?",
     "Cách lập quỹ dự phòng 6 tháng chi tiêu?",
 ]
 
@@ -318,12 +324,13 @@ def render_empty_state() -> None:
     st.markdown(
         """
         <div class="empty-state">
-            <p class="title">Chào bạn! Bạn muốn hỏi gì?</p>
-            <p class="hint">Chọn gợi ý bên dưới hoặc nhập câu hỏi vào ô chat.</p>
+            <p class="title">Chào bạn! Tôi có thể giúp gì cho bạn?</p>
+            <p class="hint">7 công cụ tài chính: Lãi suất, Tiết kiệm, Vay vốn, Đầu tư, Ngân sách, Chuyển đổi tiền tệ, Quỹ dự phòng</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
+    st.markdown("**💡 Gợi ý câu hỏi:**")
     cols = st.columns(2)
     for i, text in enumerate(SUGGESTIONS):
         with cols[i % 2]:

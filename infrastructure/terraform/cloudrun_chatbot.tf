@@ -13,7 +13,7 @@ resource "google_cloud_run_v2_service" "chatbot" {
 
       env {
         name  = "OPENAI_MODEL"
-        value = "gpt-4o-mini"
+        value = var.openai_model
       }
       env {
         name  = "TOOLS_BASE_URL"

@@ -218,3 +218,7 @@ infrastructure/terraform/*.tfstate.*
 infrastructure/terraform/terraform.tfvars
 *.tfvars
 !**/terraform.tfvars.example
+
+# Deployment info (local, không commit)
+DEPLOYMENT_INFO.local.md
+*.local.md

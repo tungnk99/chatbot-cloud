@@ -1,97 +1,79 @@
-# Load tests (Test tải)
+# Load Testing với Locust
 
-Test tải cho **Chatbot API** và **Tools API**: đo throughput (RPS), latency dưới nhiều request đồng thời.
+Load testing cho **Chatbot Cloud System** sử dụng Locust để:
+- ✅ Test performance và scalability
+- ✅ Chứng minh khả năng auto-scaling
+- ✅ Thu thập metrics và evidence
 
-## Cách 1: Locust (giao diện web, ramp-up user)
+## 📖 Documentation
+
+**→ Đọc Guide Chính: [`../../LOAD_TESTING_GUIDE.md`](../../LOAD_TESTING_GUIDE.md)**
+
+Guide đầy đủ bao gồm:
+- Quick start
+- Interactive & Automated modes
+- Evidence collection
+- Demo script cho presentation
+- Troubleshooting
+
+## 🚀 Quick Start
 
 ### Cài đặt
-
 ```bash
 pip install -r tests/load/requirements.txt
 ```
 
-### Chạy
-
-1. **Chạy Chatbot và Tools** (localhost hoặc URL deploy):
-
-   ```bash
-   # Terminal 1: Tools
-   cd backend/tools && uvicorn main:app --port 8081
-   # Terminal 2: Chatbot
-   cd backend/chatbot && uvicorn main:app --port 8080
-   ```
-
-2. **Khởi động Locust** (từ root repo):
-
-   ```bash
-   # Test Chatbot
-   locust -f tests/load/locustfile.py --host=http://localhost:8080
-
-   # Hoặc test Tools
-   locust -f tests/load/locustfile.py --host=http://localhost:8081
-   ```
-
-   Mặc định Locust dùng class user đầu tiên (`ChatbotUser`). Để chọn **Tools**:
-   dùng web UI (port 8089) chọn "ToolsUser" hoặc chạy headless:
-
-   ```bash
-   locust -f tests/load/locustfile.py --host=http://localhost:8081 --user ToolsUser --headless -u 20 -r 5 -t 60s
-   ```
-
-3. **Mở giao diện**: http://localhost:8089  
-   Nhập số user, spawn rate, Start → xem báo cáo (RPS, latency, lỗi).
-
-### Biến môi trường
-
-| Biến | Mô tả | Mặc định |
-|------|--------|----------|
-| `CHATBOT_URL` | Base URL Chatbot API | http://localhost:8080 |
-| `TOOLS_URL` | Base URL Tools API | http://localhost:8081 |
-
-Ví dụ test môi trường GCP:
-
+### Chạy Interactive Mode (Recommended)
 ```bash
-export CHATBOT_URL=https://chatbot-api-xxx.run.app
-export TOOLS_URL=https://chatbot-tools-xxx.run.app
-locust -f tests/load/locustfile.py --host=$CHATBOT_URL
+# Từ root project
+./run-locust-interactive.sh
+```
+→ Mở browser: http://localhost:8089
+
+### Chạy Automated Mode
+```bash
+# Từ root project
+./run-locust-tests.sh
 ```
 
----
+## 📁 Files
 
-## Cách 2: Pytest (script, CI)
+- **`locustfile.py`** - Test scenarios cho Locust
+- **`requirements.txt`** - Dependencies
+- **`test_load_*.py`** - Pytest load tests (optional)
 
-Chạy nhanh không cần UI, phù hợp CI hoặc đo nhanh RPS/latency.
+## 🎯 Test Scenarios
 
-### Chạy
+### ChatbotUser
+Simulate user tương tác với Chatbot:
+- Health check
+- Create session
+- Get messages
+- Send chat messages
 
+### ToolsUser  
+Test Tools API endpoints:
+- Health check
+- Interest calculator
+- Savings rate calculator
+
+## 🔧 Configuration
+
+Environment variables:
 ```bash
-# Cần Tools đang chạy (port 8081)
-TOOLS_URL=http://localhost:8081 pytest tests/load/test_load_tools.py -v -s
-
-# Cần Chatbot (+ Tools) đang chạy
-CHATBOT_URL=http://localhost:8080 pytest tests/load/test_load_chatbot.py -v -s
+CHATBOT_URL=https://chatbot-api-xxx.run.app
+TOOLS_URL=https://chatbot-tools-xxx.run.app
 ```
 
-### Biến môi trường
+## 📊 Test Profiles
 
-| Biến | Mô tả | Mặc định |
-|------|--------|----------|
-| `CHATBOT_URL` | Chatbot API | http://localhost:8080 |
-| `TOOLS_URL` | Tools API | http://localhost:8081 |
-| `LOAD_NUM_REQUESTS` | Số request mỗi test | 50 (Tools), 20 (Chatbot) |
-| `LOAD_NUM_WORKERS` | Số thread đồng thời | 10 (Tools), 5 (Chatbot) |
-| `SKIP_LOAD_TEST` | Set `=1` để bỏ qua load test (ví dụ trong CI) | (không set) |
+| Profile | Users | Expected Instances |
+|---------|-------|-------------------|
+| Light   | 10    | 1-2               |
+| Medium  | 50    | 3-5               |
+| Heavy   | 100   | 7-10              |
+| Spike   | 200   | 8-10 (max)        |
 
-Ví dụ tải nặng hơn:
+## 📚 More Info
 
-```bash
-LOAD_NUM_REQUESTS=200 LOAD_NUM_WORKERS=20 pytest tests/load/test_load_tools.py -v -s
-```
-
----
-
-## Kịch bản
-
-- **ChatbotUser (Locust)**: health, tạo session, get messages, **chat** (gửi tin nhắn).
-- **ToolsUser (Locust)**: health, **/tools/interest**, **/tools/savings-rate**.
-- **pytest**: gửi N request đồng thời (health, interest, savings-rate, sessions, chat), in avg latency (ms) và RPS.
+**→ Chi tiết: [`LOAD_TESTING_GUIDE.md`](../../LOAD_TESTING_GUIDE.md)**

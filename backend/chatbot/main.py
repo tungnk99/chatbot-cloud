@@ -129,7 +129,14 @@ async def chat(
     _check_rate_limit(client_key)
     session_id = body.session_id.strip()
     message_text = body.message.strip()
+    
+    logger.info("📨 Nhận message mới - session_id=%s, client=%s, message_length=%d", 
+                session_id, client_key, len(message_text))
+    logger.debug("📝 Message content: %s", message_text[:100])  # Log 100 ký tự đầu
+    
     if not session_id or not message_text:
+        logger.warning("⚠️  Invalid input - session_id=%s, message_empty=%s", 
+                      session_id, not message_text)
         raise HTTPException(
             status_code=400,
             detail={"code": "INVALID_INPUT", "message": "session_id and message are required"},
@@ -144,6 +151,7 @@ async def chat(
         tool_calls=[],
     )
     storage.append_message(session_id, user_msg)
+    logger.info("💾 Đã lưu user message - msg_id=%s", user_msg_id)
 
     if async_mode and settings.use_pubsub_async and settings.pubsub_topic:
         ok = await asyncio.to_thread(
@@ -162,12 +170,19 @@ async def chat(
         logger.warning("Pub/Sub publish failed, fallback to sync")
 
     # Đồng bộ hoặc Pub/Sub không khả dụng
+    logger.info("🤖 Bắt đầu xử lý với LLM - session_id=%s, model=%s", 
+                session_id, settings.openai_model)
     session_data = storage.get_session(session_id)
     messages_for_llm = _session_messages_to_openai(session_data)
+    logger.debug("💬 Số messages gửi tới LLM: %d", len(messages_for_llm))
+    
     content, tool_calls_made = await llm_client.chat_with_tools(
         messages=messages_for_llm,
         tools_client=tools_client,
     )
+    
+    logger.info("✅ LLM xử lý xong - tools_called=%d, response_length=%d", 
+                len(tool_calls_made), len(content))
     assistant_msg_id = f"msg_{uuid.uuid4().hex[:12]}"
     tool_items = [
         ToolCallItem(tool=t["tool"], input=t["input"], output=t["output"])
@@ -181,6 +196,9 @@ async def chat(
         tool_calls=[{"tool": t.tool, "input": t.input, "output": t.output} for t in tool_items],
     )
     storage.append_message(session_id, assistant_msg)
+    logger.info("💾 Đã lưu assistant message - msg_id=%s", assistant_msg_id)
+    logger.info("🎉 Hoàn thành xử lý message - session_id=%s, status=completed", session_id)
+    
     return ChatResponse(
         session_id=session_id,
         message_id=assistant_msg_id,
@@ -201,24 +219,31 @@ async def pubsub_chat_handler(request: Request) -> dict[str, str]:
         message = envelope.get("message", {})
         data_b64 = message.get("data")
         if not data_b64:
-            logger.warning("Pub/Sub push missing message.data")
+            logger.warning("⚠️  Pub/Sub push missing message.data")
             return {"status": "ok"}
         data = base64.b64decode(data_b64).decode("utf-8")
         payload = json.loads(data)
         session_id = payload.get("session_id", "").strip()
         message_text = payload.get("message", "").strip()
+        
+        logger.info("📬 Nhận Pub/Sub message - session_id=%s, message_length=%d", 
+                    session_id, len(message_text))
+        
         if not session_id or not message_text:
-            logger.warning("Pub/Sub payload missing session_id or message")
+            logger.warning("⚠️  Pub/Sub payload missing session_id or message")
             return {"status": "ok"}
         session_data = storage.get_session(session_id)
         if not session_data:
-            logger.warning("Session not found: %s", session_id)
+            logger.warning("⚠️  Session not found: %s", session_id)
             return {"status": "ok"}
+        
+        logger.info("🤖 Bắt đầu xử lý Pub/Sub message với LLM - session_id=%s", session_id)
         messages_for_llm = _session_messages_to_openai(session_data)
         content, tool_calls_made = await llm_client.chat_with_tools(
             messages=messages_for_llm,
             tools_client=tools_client,
         )
+        logger.info("✅ Pub/Sub LLM xử lý xong - tools_called=%d", len(tool_calls_made))
         assistant_msg_id = f"msg_{uuid.uuid4().hex[:12]}"
         tool_items = [
             ToolCallItem(tool=t["tool"], input=t["input"], output=t["output"])
@@ -255,10 +280,10 @@ async def list_sessions(limit: int = 50) -> ListSessionsResponse:
 async def get_messages(session_id: str) -> GetMessagesResponse:
     """Lấy lịch sử tin nhắn trong session."""
     session_data = storage.get_session(session_id)
-    if session_data is None or not session_data.messages:
+    if session_data is None:
         raise HTTPException(
             status_code=404,
-            detail={"code": "NOT_FOUND", "message": "Session not found or no messages"},
+            detail={"code": "NOT_FOUND", "message": "Session not found"},
         )
     return GetMessagesResponse(
         session_id=session_id,

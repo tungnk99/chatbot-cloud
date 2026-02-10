@@ -4,10 +4,13 @@ Router: Tính tỷ lệ tiết kiệm so với thu nhập.
 POST /tools/savings-rate
 """
 
+import logging
+
 from fastapi import APIRouter, HTTPException
 
 from .schemas import SavingsRateRequest, SavingsRateResponse
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 SUGGESTIONS = [
@@ -33,8 +36,13 @@ def calculate_savings_rate(body: SavingsRateRequest) -> SavingsRateResponse:
     """
     income = body.income
     savings = body.savings
+    
+    logger.info("📊 [Savings Rate] ===== REQUEST START =====")
+    logger.info("📊 [Savings Rate] INPUT: income=%.2f, savings=%.2f", 
+                income, savings)
 
     if income <= 0:
+        logger.warning("⚠️  [Savings Rate] Invalid income: %.2f", income)
         raise HTTPException(
             status_code=400,
             detail={
@@ -43,6 +51,7 @@ def calculate_savings_rate(body: SavingsRateRequest) -> SavingsRateResponse:
             },
         )
     if savings < 0:
+        logger.warning("⚠️  [Savings Rate] Invalid savings: %.2f", savings)
         raise HTTPException(
             status_code=400,
             detail={
@@ -59,10 +68,17 @@ def calculate_savings_rate(body: SavingsRateRequest) -> SavingsRateResponse:
         suggestion = SUGGESTIONS[1]
     else:
         suggestion = SUGGESTIONS[2]
-
-    return SavingsRateResponse(
+    
+    result = SavingsRateResponse(
         income=income,
         savings=savings,
         savings_rate_percent=round(rate, 2),
         suggestion=suggestion,
     )
+    
+    logger.info("✅ [Savings Rate] OUTPUT: rate=%.2f%%, income=%.2f, savings=%.2f",
+                result.savings_rate_percent, income, savings)
+    logger.info("✅ [Savings Rate] SUGGESTION: %s", suggestion)
+    logger.info("✅ [Savings Rate] ===== REQUEST END =====")
+    
+    return result

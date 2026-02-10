@@ -107,3 +107,9 @@ variable "enable_pubsub_async" {
   type        = bool
   default     = true
 }
+
+variable "openai_model" {
+  description = "OpenAI model name (ví dụ: gpt-5-nano, gpt-4o-mini, gpt-4o, gpt-3.5-turbo)"
+  type        = string
+  default     = "gpt-5-nano"
+}

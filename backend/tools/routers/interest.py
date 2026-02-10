@@ -4,10 +4,13 @@ Router: Tính lãi đơn / lãi kép.
 POST /tools/interest
 """
 
+import logging
+
 from fastapi import APIRouter, HTTPException
 
 from .schemas import InterestRequest, InterestResponse
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -29,8 +32,14 @@ def calculate_interest(body: InterestRequest) -> InterestResponse:
     rate_percent = body.rate_percent
     months = body.months
     compound = body.compound
+    
+    logger.info("💰 [Interest Calculator] ===== REQUEST START =====")
+    logger.info("💰 [Interest Calculator] INPUT: principal=%.2f, rate=%.2f%%, months=%.1f, compound=%s",
+                principal, rate_percent, months, compound)
 
     if principal <= 0 or rate_percent < 0 or months <= 0:
+        logger.warning("⚠️  [Interest Calculator] Invalid input: principal=%s, rate=%s, months=%s",
+                      principal, rate_percent, months)
         raise HTTPException(
             status_code=400,
             detail={
@@ -51,8 +60,8 @@ def calculate_interest(body: InterestRequest) -> InterestResponse:
         total = principal + interest_amount
 
     interest_amount = total - principal
-
-    return InterestResponse(
+    
+    result = InterestResponse(
         principal=principal,
         interest=round(interest_amount, 2),
         total=round(total, 2),
@@ -60,3 +69,10 @@ def calculate_interest(body: InterestRequest) -> InterestResponse:
         months=months,
         compound=compound,
     )
+    
+    logger.info("✅ [Interest Calculator] OUTPUT: interest=%.2f, total=%.2f, principal=%.2f",
+                result.interest, result.total, result.principal)
+    logger.info("✅ [Interest Calculator] ===== REQUEST END ===== (method=%s)",
+                "compound" if compound else "simple")
+    
+    return result

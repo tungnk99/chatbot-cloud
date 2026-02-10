@@ -36,52 +36,64 @@ class ChatbotUser(HttpUser):
     def health(self) -> None:
         self.client.get("/health", name="/health")
 
+    @task(5)
+    def chat(self) -> None:
+        """Send simple chat message"""
+        self.client.post(
+            "/api/chat",
+            json={
+                "session_id": self.session_id,
+                "message": "Xin chào",
+            },
+            name="/api/chat",
+        )
+
     @task(2)
+    def create_multiple_sessions(self) -> None:
+        """Create multiple sessions to generate load"""
+        self.client.post(
+            "/api/sessions",
+            name="/api/sessions [create]",
+        )
+
+    @task(3)
     def get_messages(self) -> None:
+        """Get messages - may return empty but shouldn't error"""
         self.client.get(
             f"/api/sessions/{self.session_id}/messages",
             name="/api/sessions/{id}/messages",
         )
 
-    @task(5)
-    def chat(self) -> None:
-        self.client.post(
-            "/api/chat",
-            json={
-                "session_id": self.session_id,
-                "message": "Tính lãi 100 triệu, 6%/năm, 12 tháng?",
-            },
-            name="/api/chat",
-        )
 
-
-class ToolsUser(HttpUser):
-    """User gọi Tools API: health, interest, savings-rate."""
-
-    host = TOOLS_URL
-    wait_time = between(0.5, 2)
-
-    @task(2)
-    def health(self) -> None:
-        self.client.get("/health", name="/health")
-
-    @task(4)
-    def interest(self) -> None:
-        self.client.post(
-            "/tools/interest",
-            json={
-                "principal": 100_000_000,
-                "rate_percent": 6,
-                "months": 12,
-                "compound": False,
-            },
-            name="/tools/interest",
-        )
-
-    @task(3)
-    def savings_rate(self) -> None:
-        self.client.post(
-            "/tools/savings-rate",
-            json={"income": 20_000_000, "savings": 4_000_000},
-            name="/tools/savings-rate",
-        )
+# ToolsUser disabled - chỉ test Chatbot API
+# Uncomment nếu muốn test Tools API riêng
+# class ToolsUser(HttpUser):
+#     """User gọi Tools API: health, interest, savings-rate."""
+#
+#     host = TOOLS_URL
+#     wait_time = between(0.5, 2)
+#
+#     @task(2)
+#     def health(self) -> None:
+#         self.client.get("/health", name="/health")
+#
+#     @task(4)
+#     def interest(self) -> None:
+#         self.client.post(
+#             "/tools/interest",
+#             json={
+#                 "principal": 100_000_000,
+#                 "rate_percent": 6,
+#                 "months": 12,
+#                 "compound": False,
+#             },
+#             name="/tools/interest",
+#         )
+#
+#     @task(3)
+#     def savings_rate(self) -> None:
+#         self.client.post(
+#             "/tools/savings-rate",
+#             json={"income": 20_000_000, "savings": 4_000_000},
+#             name="/tools/savings-rate",
+#         )

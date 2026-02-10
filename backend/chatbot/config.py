@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     # LLM
     openai_api_key: str = ""
-    openai_model: str = "gpt-4o-mini"
+    openai_model: str = "gpt-5-nano"
 
     # Tools service URL (Backend/tools)
     tools_base_url: str = "http://localhost:8081"
